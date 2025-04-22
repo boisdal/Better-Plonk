@@ -1,0 +1,13 @@
+body {
+    background-color: #212529;
+    color: white;
+}
+
+.card {
+    background-color: #808080;
+}
+
+.dropdown-menu {
+    max-height: 300px;
+    overflow-y: scroll;
+}

@@ -1,0 +1,1 @@
+$('#homeNavLink').addClass('active')
