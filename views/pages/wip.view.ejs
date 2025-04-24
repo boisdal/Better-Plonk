@@ -1,1 +1,10 @@
-<div>WIP</div>
+<%- include('../commons/head.com.ejs', {title: '[WIP] ' + title}) %>
+
+<body>
+    <%- include('../commons/navbar.com.ejs', {user: user}) %>
+    <div class="p-3"><h3>The page <%= title %> is being built.</h3></div>
+</body>
+
+<%- include('../commons/foot.com.ejs') %>
+
+<script src="/js/home.js"></script>
