@@ -14,6 +14,7 @@ const bindScanActivities = function() {
                         // Add a user notification to inform
                         $.get('/scrap/getscrapbuttonsection', (data) => {
                             $("#ScrapButtonSection").replaceWith(data)
+                            bindAllScrapDataEvents()
                         })
                         clearInterval(interval)
                     }

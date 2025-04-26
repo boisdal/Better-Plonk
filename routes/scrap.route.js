@@ -36,7 +36,8 @@ const storeGame = async function(user, game) {
     let newGame = {
         userId: user._id, 
         type: activityCodes[game.type], 
-        time: game.time
+        time: game.time,
+        gameMode: game.payload.gameMode
     }
     switch (newGame.type) {
         case 'Unknown':

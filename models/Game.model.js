@@ -17,6 +17,10 @@ const GameSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  gameMode: {
+    type: String,
+    required: false,
+  },
 }, { collection: 'games'})
 
 module.exports = mongoose.model('Game', GameSchema)
