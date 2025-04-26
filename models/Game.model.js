@@ -5,12 +5,16 @@ const GameSchema = new mongoose.Schema({
     type: mongoose.ObjectId,
     required: true,
   },
-  activityId: {
-    type: mongoose.ObjectId,
+  type: {
+    type: String,
     required: true,
   },
-  type: {
-    type: Number,
+  time: {
+    type: Date,
+    required: true,
+  },
+  gameGGId: {
+    type: String,
     required: true,
   },
 }, { collection: 'games'})
