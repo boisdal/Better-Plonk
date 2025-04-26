@@ -19,16 +19,7 @@
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br>
         </p>
         <hr>
-        <div id="ScrapButtonSection">
-            <% if (user.token) { %>
-                <h6>0 activities in the database</h6>
-                <h6>Latest : never</h6>
-                <button id="ScanActivitiesButton" type="button" class="btn btn-primary ms-0 me-4">Scan activities</button>
-            <% } else { %>
-                <h6>You have no token linked to this account.</h6>
-                <h6>Please go to Scrap > Settings.</h6>
-            <% } %>
-        </div>
+        <%- include('../partials/scrapbuttonsection.part.ejs', {user, totalGameCount, latestGame}) %>
     </div>
 </body>
 

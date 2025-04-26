@@ -91,7 +91,13 @@ const storeGame = async function(user, game) {
 }
 
 router.get('/data', ensureAuth, async(req,res) => {
-  res.render('pages/scrapdata.view.ejs', {user:req.user})
+    let gameList = await Game.find({userId: req.user._id}).sort({date: 'descending'})
+    let totalGameCount = gameList.length
+    let latestGame = 'never'
+    if (totalGameCount > 0) {
+    latestGame = gameList[0].time
+    }
+    res.render('pages/scrapdata.view.ejs', {user:req.user, totalGameCount, latestGame})
 })
 
 router.post('/scanactivities', ensureAuth, async(req, res) => {
@@ -103,6 +109,16 @@ router.post('/scanactivities', ensureAuth, async(req, res) => {
 router.get('/isTaskDone', ensureAuth, async(req,res) => {
   let currentTaskList = await Task.find({userId: req.user._id})
   res.json({isDone: (currentTaskList.length == 0)})
+})
+
+router.get('/getscrapbuttonsection', ensureAuth, async(req,res) => {
+  let gameList = await Game.find({userId: req.user._id}).sort({date: 'descending'})
+  let totalGameCount = gameList.length
+  let latestGame = 'never'
+  if (totalGameCount > 0) {
+    latestGame = gameList[0].time
+  }
+  res.render('partials/scrapbuttonsection.part.ejs', {user: req.user, totalGameCount, latestGame})
 })
 
 router.get('/settings', ensureAuth, async(req,res) => {

@@ -1,0 +1,10 @@
+<div id="ScrapButtonSection">
+    <% if (user.token) { %>
+        <h6><%= totalGameCount %> games in the database</h6>
+        <h6>Latest : <%= latestGame %></h6>
+        <button id="ScanActivitiesButton" type="button" class="btn btn-primary">Scan activities</button>
+    <% } else { %>
+        <h6>You have no token linked to this account.</h6>
+        <h6>Please go to Scrap > Settings.</h6>
+    <% } %>
+</div>
