@@ -18,115 +18,115 @@ const scanActivities = async function(user) {
     paginationToken = response.paginationToken
     if (paginationToken == null) {nextPageExists = false}
     for (let activity of response.entries) {
-        if (activityCodes[activity.type] == 'Group') {
-            for (let game of activity.payload) {
-                await storeGame(user, game)
-            }
-        } else {
-            await storeGame(user, activity)
+      if (activityCodes[activity.type] == 'Group') {
+        for (let game of activity.payload) {
+          await storeGame(user, game)
         }
+      } else {
+        await storeGame(user, activity)
+      }
     }
   }
   await Task.deleteMany({userId: user._id})
 }
 
 const storeGame = async function(user, game) {
-    let newGame = {
-        userId: user._id, 
-        type: activityCodes[game.type], 
-        time: game.time,
-        gameMode: game.payload.gameMode
-    }
-    switch (newGame.type) {
-        case 'Unknown':
-            console.log('Event of type Unknown detected, nothing to do but logging it.')
-            console.log(game, user)
-            return
-        case 'PlayedGame':
-            newGame.gameGGId = game.payload.gameToken
-            break
-        case 'PlayedChallenge':
-            newGame.gameGGId = game.payload.challengeToken
-            break
-        case 'CreatedMap':
-            // console.log('Event of type CreatedMap detected, nothing to do.') // not even logging it
-            return
-        case 'UnlockedBadge':
-            // console.log('Event of type UnlockedBadge detected, nothing to do.') // not even logging it
-            return
-        case 'LikedMap':
-            // console.log('Event of type LikedMap detected, nothing to do.') // not even logging it
-            return
-        case 'PlayedCompetitiveGame':
-            newGame.gameGGId = game.payload.gameId
-            break
-        case 'Group':
-            console.log('Event of type group detected, should not have happened')
-            return
-        case 'PlayedSinglePlayerQuiz':
-            console.log('Event of type PlayedSinglePlayerQuiz detected, no idea what id to take')
-            console.log(game, user)
-            break
-        case 'PlayedPartyGame':
-            newGame.gameGGId = game.payload.gameId
-            break
-        case 'PlayedInfinityGame':
-            newGame.gameGGId = game.payload.gameId
-            break
-        case 'PlayedCasualGame':
-            newGame.gameGGId = game.payload.gameId
-            break
-        case 'PlayedQuickplayGame':
-            newGame.gameGGId = game.payload.gameId
-            break
-        case 'PlayedPublicTeamDuel':
-            newGame.gameGGId = game.payload.gameId
-            break
-    }
-    let existsAlready = await Game.where(newGame).countDocuments()
-    if (!existsAlready) {
-        Game.create(newGame)
-    }
+  let newGame = {
+    userId: user._id, 
+    type: activityCodes[game.type], 
+    time: game.time,
+    gameMode: game.payload.gameMode
+  }
+  switch (newGame.type) {
+    case 'Unknown':
+      console.log('Event of type Unknown detected, nothing to do but logging it.')
+      console.log(game, user)
+      return
+    case 'PlayedGame':
+      newGame.gameGGId = game.payload.gameToken
+      break
+    case 'PlayedChallenge':
+      newGame.gameGGId = game.payload.challengeToken
+      break
+    case 'CreatedMap':
+      // console.log('Event of type CreatedMap detected, nothing to do.') // not even logging it
+      return
+    case 'UnlockedBadge':
+      // console.log('Event of type UnlockedBadge detected, nothing to do.') // not even logging it
+      return
+    case 'LikedMap':
+      // console.log('Event of type LikedMap detected, nothing to do.') // not even logging it
+      return
+    case 'PlayedCompetitiveGame':
+      newGame.gameGGId = game.payload.gameId
+      break
+    case 'Group':
+      console.log('Event of type group detected, should not have happened')
+      return
+    case 'PlayedSinglePlayerQuiz':
+      console.log('Event of type PlayedSinglePlayerQuiz detected, no idea what id to take')
+      console.log(game, user)
+      break
+    case 'PlayedPartyGame':
+      newGame.gameGGId = game.payload.gameId
+      break
+    case 'PlayedInfinityGame':
+      newGame.gameGGId = game.payload.gameId
+      break
+    case 'PlayedCasualGame':
+      newGame.gameGGId = game.payload.gameId
+      break
+    case 'PlayedQuickplayGame':
+      newGame.gameGGId = game.payload.gameId
+      break
+    case 'PlayedPublicTeamDuel':
+      newGame.gameGGId = game.payload.gameId
+      break
+  }
+  let existsAlready = await Game.where(newGame).countDocuments()
+  if (!existsAlready) {
+    Game.create(newGame)
+  }
 }
 
 const prepareScrapButtonSection = async function(user) {
-    let gameGlobalData = await Game.aggregate([
-        {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
-        {$group: {_id: null, count: {$sum: 1}, countDuelsMatched: {
-            $sum: {$cond: {if: {$eq: ["$duelsMatchedList", []]}, then: 0, else: 1}}
-        }, latest: {$max: "$time"}}},
-        {$project: {_id: 0}}
-      ])
-    let latestGame = 'never'
-    if (gameGlobalData.length > 0) {
-        latestGame = gameGlobalData[0].latest
-    }
-    let gameStats = []
-    gameStats.push({title: 'Total', buttonLink: '/scrap/getgamedetails/all', nbGames: gameGlobalData[0].count, nbGamesDetailed: gameGlobalData[0].countDuelsMatched})
+  let gameGlobalData = await Game.aggregate([
+    {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
+    {$group: {_id: null, count: {$sum: 1}, countDuelsMatched: {
+      $sum: {$cond: {if: {$eq: ["$duelsMatchedList", []]}, then: 0, else: 1}}
+    }, latest: {$max: "$time"}}},
+    {$project: {_id: 0}}
+  ])
+  let latestGame = 'never'
+  if (gameGlobalData.length > 0) {
+    latestGame = gameGlobalData[0].latest
+  }
+  let gameStats = []
+  gameStats.push({title: 'Total', buttonLink: '/scrap/getgamedetails/all', nbGames: gameGlobalData[0].count, nbGamesDetailed: gameGlobalData[0].countDuelsMatched})
 
-    let groupedGames = await Game.aggregate([
-        {$match: {userId: user._id}},
-        {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
-        {$group: {_id: {type: "$type", gameMode: "$gameMode"}, count: {$sum: 1}, matchedDuelCount: {
-            $sum: {$cond: {if: {$eq: ["$duelsMatchedList", []]}, then: 0, else: 1}}
-        }}},
-        {$project: {_id: 0, type: "$_id.type", gameMode: "$_id.gameMode", count: 1, matchedDuelCount: 1}}
-    ])
+  let groupedGames = await Game.aggregate([
+    {$match: {userId: user._id}},
+    {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
+    {$group: {_id: {type: "$type", gameMode: "$gameMode"}, count: {$sum: 1}, matchedDuelCount: {
+      $sum: {$cond: {if: {$eq: ["$duelsMatchedList", []]}, then: 0, else: 1}}
+    }}},
+    {$project: {_id: 0, type: "$_id.type", gameMode: "$_id.gameMode", count: 1, matchedDuelCount: 1}}
+  ])
 
-    let groupedCompDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'Duels')[0]
-    let {count: compDuelGameCount, matchedDuelCount: compDuelDetailedGameCount} = groupedCompDuelGame
-    gameStats.push({title: 'Competitive Duels', buttonLink: '/scrap/getgamedetails/compduel', nbGames: compDuelGameCount, nbGamesDetailed: compDuelDetailedGameCount})
+  let groupedCompDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'Duels')[0]
+  let {count: compDuelGameCount, matchedDuelCount: compDuelDetailedGameCount} = groupedCompDuelGame
+  gameStats.push({title: 'Competitive Duels', buttonLink: '/scrap/getgamedetails/compduel', nbGames: compDuelGameCount, nbGamesDetailed: compDuelDetailedGameCount})
 
-    let groupedCompTeamDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'TeamDuels')[0]
-    let {count: compTeamDuelGameCount, matchedDuelCount: compTeamDuelDetailedGameCount} = groupedCompTeamDuelGame
-    gameStats.push({title: 'Competitive Team Duels', buttonLink: '/scrap/getgamedetails/compteamduel', nbGames: compTeamDuelGameCount, nbGamesDetailed: compTeamDuelDetailedGameCount})
+  let groupedCompTeamDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'TeamDuels')[0]
+  let {count: compTeamDuelGameCount, matchedDuelCount: compTeamDuelDetailedGameCount} = groupedCompTeamDuelGame
+  gameStats.push({title: 'Competitive Team Duels', buttonLink: '/scrap/getgamedetails/compteamduel', nbGames: compTeamDuelGameCount, nbGamesDetailed: compTeamDuelDetailedGameCount})
 
-    return {latestGame, gameStats}
+  return {latestGame, gameStats}
 }
 
 router.get('/data', ensureAuth, async(req,res) => {
-    let {latestGame, gameStats} = await prepareScrapButtonSection(req.user)
-    res.render('pages/scrapdata.view.ejs', {user:req.user, latestGame, gameStats})
+  let {latestGame, gameStats} = await prepareScrapButtonSection(req.user)
+  res.render('pages/scrapdata.view.ejs', {user:req.user, latestGame, gameStats})
 })
 
 router.post('/scanactivities', ensureAuth, async(req, res) => {
@@ -141,8 +141,8 @@ router.get('/isTaskDone', ensureAuth, async(req,res) => {
 })
 
 router.get('/getscrapbuttonsection', ensureAuth, async(req,res) => {
-    let {latestGame, gameStats} = await prepareScrapButtonSection(req.user)
-    res.render('partials/scrapbuttonsection.part.ejs', {user: req.user, latestGame, gameStats})
+  let {latestGame, gameStats} = await prepareScrapButtonSection(req.user)
+  res.render('partials/scrapbuttonsection.part.ejs', {user: req.user, latestGame, gameStats})
 })
 
 router.get('/settings', ensureAuth, async(req,res) => {
