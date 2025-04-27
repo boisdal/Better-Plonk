@@ -17,7 +17,6 @@ const scanActivities = async function(user) {
     }
     paginationToken = response.paginationToken
     if (paginationToken == null) {nextPageExists = false}
-    //console.log(response.entries[2].time, response.entries[2].payload)//, response.entries[3], response.entries[4])
     for (let activity of response.entries) {
         if (activityCodes[activity.type] == 'Group') {
             for (let game of activity.payload) {
@@ -27,7 +26,6 @@ const scanActivities = async function(user) {
             await storeGame(user, activity)
         }
     }
-    //nextPageExists = false
   }
   await Task.deleteMany({userId: user._id})
 }
@@ -91,14 +89,44 @@ const storeGame = async function(user, game) {
     }
 }
 
-router.get('/data', ensureAuth, async(req,res) => {
-    let gameList = await Game.find({userId: req.user._id}).sort({date: 'descending'})
-    let totalGameCount = gameList.length
+const prepareScrapButtonSection = async function(user) {
+    let gameGlobalData = await Game.aggregate([
+        {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
+        {$group: {_id: null, count: {$sum: 1}, countDuelsMatched: {
+            $sum: {$cond: {if: {$eq: ["$duelsMatchedList", []]}, then: 0, else: 1}}
+        }, latest: {$max: "$time"}}},
+        {$project: {_id: 0}}
+      ])
     let latestGame = 'never'
-    if (totalGameCount > 0) {
-    latestGame = gameList[0].time
+    if (gameGlobalData.length > 0) {
+        latestGame = gameGlobalData[0].latest
     }
-    res.render('pages/scrapdata.view.ejs', {user:req.user, totalGameCount, latestGame})
+    let gameStats = []
+    gameStats.push({title: 'Total', buttonLink: '/scrap/getgamedetails/all', nbGames: gameGlobalData[0].count, nbGamesDetailed: gameGlobalData[0].countDuelsMatched})
+
+    let groupedGames = await Game.aggregate([
+        {$match: {userId: user._id}},
+        {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
+        {$group: {_id: {type: "$type", gameMode: "$gameMode"}, count: {$sum: 1}, matchedDuelCount: {
+            $sum: {$cond: {if: {$eq: ["$duelsMatchedList", []]}, then: 0, else: 1}}
+        }}},
+        {$project: {_id: 0, type: "$_id.type", gameMode: "$_id.gameMode", count: 1, matchedDuelCount: 1}}
+    ])
+
+    let groupedCompDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'Duels')[0]
+    let {count: compDuelGameCount, matchedDuelCount: compDuelDetailedGameCount} = groupedCompDuelGame
+    gameStats.push({title: 'Competitive Duels', buttonLink: '/scrap/getgamedetails/compduel', nbGames: compDuelGameCount, nbGamesDetailed: compDuelDetailedGameCount})
+
+    let groupedCompTeamDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'TeamDuels')[0]
+    let {count: compTeamDuelGameCount, matchedDuelCount: compTeamDuelDetailedGameCount} = groupedCompTeamDuelGame
+    gameStats.push({title: 'Competitive Team Duels', buttonLink: '/scrap/getgamedetails/compteamduel', nbGames: compTeamDuelGameCount, nbGamesDetailed: compTeamDuelDetailedGameCount})
+
+    return {latestGame, gameStats}
+}
+
+router.get('/data', ensureAuth, async(req,res) => {
+    let {latestGame, gameStats} = await prepareScrapButtonSection(req.user)
+    res.render('pages/scrapdata.view.ejs', {user:req.user, latestGame, gameStats})
 })
 
 router.post('/scanactivities', ensureAuth, async(req, res) => {
@@ -113,13 +141,8 @@ router.get('/isTaskDone', ensureAuth, async(req,res) => {
 })
 
 router.get('/getscrapbuttonsection', ensureAuth, async(req,res) => {
-  let gameList = await Game.find({userId: req.user._id}).sort({date: 'descending'})
-  let totalGameCount = gameList.length
-  let latestGame = 'never'
-  if (totalGameCount > 0) {
-    latestGame = gameList[0].time
-  }
-  res.render('partials/scrapbuttonsection.part.ejs', {user: req.user, totalGameCount, latestGame})
+    let {latestGame, gameStats} = await prepareScrapButtonSection(req.user)
+    res.render('partials/scrapbuttonsection.part.ejs', {user: req.user, latestGame, gameStats})
 })
 
 router.get('/settings', ensureAuth, async(req,res) => {
