@@ -9,5 +9,31 @@ body {
 
 .dropdown-menu {
     max-height: 300px;
-    overflow-y: scroll;
+}
+
+.custom-toast-info {
+    background-color: #373d43;
+}
+
+.custom-toast-info .toast-header {
+    color: white;
+    background-color: #2f3438;
+}
+
+.custom-toast-warning {
+    background-color: #867225;
+}
+
+.custom-toast-warning .toast-header {
+    color: white;
+    background-color: #635930;
+}
+
+.custom-toast-error {
+    background-color: #863825;
+}
+
+.custom-toast-error .toast-header {
+    color: white;
+    background-color: #5a3026;
 }

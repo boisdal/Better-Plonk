@@ -33,6 +33,9 @@ const bindScanActivities = function() {
 
 const bindAllScrapDataEvents = function() {
     bindScanActivities()
+    toastNotif('Info', 'subtitle', 'Test info toast', 1000, false)
+    toastNotif('Warning', 'subtitle', 'Test warning toast', 1000, false, 'warning')
+    toastNotif('Error', 'subtitle', 'Test error toast', 1000, false, 'error')
 }
 
 bindAllScrapDataEvents()
