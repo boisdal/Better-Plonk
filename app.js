@@ -42,6 +42,7 @@ app.use(passport.session())
 app.use(require("./routes/index.route"))
 app.use('/auth', require('./routes/auth.route'))
 app.use('/scrap', require('./routes/scrap.route'))
+app.use('/scrap/getgamedetails', require('./routes/getgamedetails.route'))
 app.use('/history', require('./routes/history.route'))
 app.use('/training', require('./routes/training.route'))
 

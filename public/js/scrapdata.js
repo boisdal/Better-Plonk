@@ -2,40 +2,53 @@ $('#ScrapNavDropdown').addClass('active')
 
 const bindScanActivities = function() {
     $('#ScanActivitiesButton').off('click').on('click', () => {
+        // Disable all buttons
+        let t0 = $.now()
         $.post('/scrap/scanactivities', (data) => {
             console.log(data)
-            $("#ScanActivitiesButton").replaceWith('<button id="ScanActivitiesButton" class="btn btn-primary" type="button" disabled><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Scanning...</button>')
-            // Disable all buttons
-            let cnt = 0
-            let interval = setInterval(function() {
-                $.get('/scrap/isTaskDone', (data) => {
-                    console.log(data)
-                    if (data.isDone) {
-                        // Add a user notification to inform
-                        $.get('/scrap/getscrapbuttonsection', (data) => {
-                            $("#ScrapButtonSection").replaceWith(data)
-                            bindAllScrapDataEvents()
-                        })
-                        clearInterval(interval)
-                    }
-                    if (cnt > 30) {
-                        console.warn('30 seconds have passed and still not done. Try refreshing later')
-                        // Add a user notification to inform
-                        clearInterval(interval)
-                    } else {
-                        cnt ++
-                    }
+            $("#ScanActivitiesButton").prop('disabled', true)
+            $("#ScanActivitiesButton").html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Scanning...')
+            waitForTaskCompletion(0, '/scrap/isTaskDone', 10, function() {
+                let t1 = $.now()
+                let dt = (t1-t0)/1000
+                toastNotif('Done', `took ${dt}s`, 'Scan is done')
+                $.get('/scrap/getscrapbuttonsection', (data) => {
+                    $("#ScrapButtonSection").replaceWith(data)
+                    bindAllScrapDataEvents()
                 })
-            }, 1000)
+            })
+        })
+    })
+}
+
+const bindCategoryScanButtons = function () {
+    $('.scan-game-category-details').off('click').on('click', (event) => {
+        let t0 = $.now()
+        let button = $(event.target)
+        let link = button.attr('data-link')
+        $.get(link, (data) => {
+            if (!data.isOk) {
+                toastNotif('Scan error', '', data.reason, 10000, true, 'warning')
+            } else {
+                button.prop('disabled', true)
+                button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Scanning...')
+                waitForTaskCompletion(0, '/scrap/isTaskDone', 30, function() {
+                    let t1 = $.now()
+                    let dt = (t1-t0)/1000
+                    toastNotif('Done', `took ${dt}s`, 'Scan is done')
+                    $.get('/scrap/getscrapbuttonsection', (data) => {
+                        $("#ScrapButtonSection").replaceWith(data)
+                        bindAllScrapDataEvents()
+                    })
+                })
+            }
         })
     })
 }
 
 const bindAllScrapDataEvents = function() {
     bindScanActivities()
-    toastNotif('Info', 'subtitle', 'Test info toast', 1000, false)
-    toastNotif('Warning', 'subtitle', 'Test warning toast', 1000, false, 'warning')
-    toastNotif('Error', 'subtitle', 'Test error toast', 1000, false, 'error')
+    bindCategoryScanButtons()
 }
 
 bindAllScrapDataEvents()

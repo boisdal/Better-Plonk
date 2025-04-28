@@ -23,3 +23,15 @@ const toastNotif = function(title, subtitle, body, delay=3000, autohide=true, ty
   toast.show()
 }
 
+const waitForTaskCompletion = function(cnt, checkingUrl, timeout, callback) {
+  $.get(checkingUrl, (data) => {
+      console.log(data)
+      if (data.isDone) {
+          callback()
+      } else if (cnt > timeout) {
+          toastNotif('Timeout', timeout + ' seconds elapsed', 'The task took too long.', 1000, false, 'error')
+      } else {
+          setTimeout(waitForTaskCompletion, 1000, cnt + 1, checkingUrl, timeout, callback)
+      }
+  })
+}

@@ -115,11 +115,11 @@ const prepareScrapButtonSection = async function(user) {
 
   let groupedCompDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'Duels')[0]
   let {count: compDuelGameCount, matchedDuelCount: compDuelDetailedGameCount} = groupedCompDuelGame
-  gameStats.push({title: 'Competitive Duels', buttonLink: '/scrap/getgamedetails/compduel', nbGames: compDuelGameCount, nbGamesDetailed: compDuelDetailedGameCount})
+  gameStats.push({title: 'Competitive Duels', buttonLink: '/scrap/getgamedetails/compduels', nbGames: compDuelGameCount, nbGamesDetailed: compDuelDetailedGameCount})
 
   let groupedCompTeamDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'TeamDuels')[0]
   let {count: compTeamDuelGameCount, matchedDuelCount: compTeamDuelDetailedGameCount} = groupedCompTeamDuelGame
-  gameStats.push({title: 'Competitive Team Duels', buttonLink: '/scrap/getgamedetails/compteamduel', nbGames: compTeamDuelGameCount, nbGamesDetailed: compTeamDuelDetailedGameCount})
+  gameStats.push({title: 'Competitive Team Duels', buttonLink: '/scrap/getgamedetails/compteamduels', nbGames: compTeamDuelGameCount, nbGamesDetailed: compTeamDuelDetailedGameCount})
 
   return {latestGame, gameStats}
 }
