@@ -2,9 +2,18 @@ const router = require('express').Router()
 const { ensureAuth, ensureGuest } = require('../middleware/auth')
 const request = require('request-promise')
 const Task = require('../models/Task.model')
+const Duel = require('../models/Duel.model')
 const Game = require('../models/Game.model')
+const Guess = require('../models/Guess.model')
+const Round = require('../models/Round.model')
 const {activityCodes} = require('../utils/enums')
 const BASE_URL = 'https://www.geoguessr.com/api'
+const userDependantTableList = [
+  {name: 'Duel', model: Duel},
+  {name: 'Game', model: Game},
+  {name: 'Guess', model: Guess},
+  {name: 'Round', model: Round}
+]
 
 const scanActivities = async function(user) {
   let nextPageExists = true
@@ -89,7 +98,7 @@ const storeGame = async function(user, game) {
   }
 }
 
-const prepareScrapButtonSection = async function(user) {
+const prepareScrapButtonSection = async function(user) { // TODO: adapt to allow empty game table
   let gameGlobalData = await Game.aggregate([
     {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
     {$group: {_id: null, count: {$sum: 1}, countDuelsMatched: {
@@ -124,7 +133,16 @@ const prepareScrapButtonSection = async function(user) {
   return {latestGame, gameStats}
 }
 
-router.get('/data', ensureAuth, async(req,res) => {
+const prepareCleanDataButtonSection = async function(user) {
+  let lineCountByTable = []
+  for (let table of userDependantTableList) {
+    let nbDocuments = await table.model.find({userId: user._id}).countDocuments()
+    lineCountByTable.push({name: table.name, count: nbDocuments})
+  }
+  return lineCountByTable
+}
+
+router.get('/data', ensureAuth, async (req,res) => {
   let {latestGame, gameStats} = await prepareScrapButtonSection(req.user)
   res.render('pages/scrapdata.view.ejs', {user:req.user, latestGame, gameStats})
 })
@@ -145,8 +163,22 @@ router.get('/getscrapbuttonsection', ensureAuth, async(req,res) => {
   res.render('partials/scrapbuttonsection.part.ejs', {user: req.user, latestGame, gameStats})
 })
 
-router.get('/settings', ensureAuth, async(req,res) => {
-  res.render('pages/wip.view.ejs', {user:req.user, title: 'settings'})
+router.get('/settings', ensureAuth, async (req,res) => {
+  let lineCountByTable = await prepareCleanDataButtonSection(req.user)
+  res.render('pages/scrapsettings.view.ejs', {user:req.user, lineCountByTable})
+})
+
+router.post('/cleantable/:tablename', ensureAuth, async(req, res) => {
+  let tableName = req.params.tablename
+  console.log(`Cleaning table ${tableName} for user ${req.user.displayName}`)
+  for (let table of userDependantTableList) {
+    if (table.name == tableName) {
+      await table.model.deleteMany({userId: req.user._id})
+    }
+  }
+  let lineCountByTable = await prepareCleanDataButtonSection(req.user)
+  res.render('partials/cleandatabuttonsection.part.ejs', {user:req.user, lineCountByTable})
+
 })
 
 module.exports=router;

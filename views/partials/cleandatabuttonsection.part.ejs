@@ -1,0 +1,17 @@
+<div id="CleanDataButtonSection">
+    <h6>Your data in the BetterPlonk database</h6>
+    <table class="table table-dark" style="width: fit-content;">
+        <thead>
+            <th scope="col">Table</th>
+            <th scope="col">Nb of lines</th>
+            <th scope="col"></th>
+        </thead>
+        <% for (let table of lineCountByTable) { %>
+        <tr>
+            <td><%= table.name %></td>
+            <td><%= table.count %></td>
+            <td><button type="button" class="btn btn-primary clean-user-table-data" data-table-name="<%= table.name %>">Delete</button></td>
+        </tr>
+        <% } %>
+    </table>
+</div>
