@@ -132,7 +132,7 @@ router.get('/data', ensureAuth, async(req,res) => {
 router.post('/scanactivities', ensureAuth, async(req, res) => {
   await Task.create({userId: req.user._id, name: 'activity scan'})
   scanActivities(req.user)
-  res.json({isok: true, gonnawait: true})
+  res.json({isOk: true})
 })
 
 router.get('/isTaskDone', ensureAuth, async(req,res) => {
