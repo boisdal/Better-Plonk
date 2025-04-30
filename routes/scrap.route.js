@@ -106,31 +106,37 @@ const prepareScrapButtonSection = async function(user) { // TODO: adapt to allow
     }, latest: {$max: "$time"}}},
     {$project: {_id: 0}}
   ])
-  let latestGame = 'never'
-  if (gameGlobalData.length > 0) {
+  if (gameGlobalData.length == 0) {
+    let latestGame = 'never'
+    let gameStats = [
+      {title: 'Total', buttonLink:'/scrap/getgamedetails/all', nbGames: 0, nbGamesDetailed: 0},
+      {title: 'Competitive Duels', buttonLink:'/scrap/getgamedetails/compduels', nbGames: 0, nbGamesDetailed: 0},
+      {title: 'Competitive Team Duels', buttonLink:'/scrap/getgamedetails/compteamduels', nbGames: 0, nbGamesDetailed: 0}
+    ]
+    return {latestGame, gameStats}
+  } else {
     latestGame = gameGlobalData[0].latest
+    let gameStats = []
+    gameStats.push({title: 'Total', buttonLink: '/scrap/getgamedetails/all', nbGames: gameGlobalData[0].count, nbGamesDetailed: gameGlobalData[0].countDuelsMatched})
+
+    let groupedGames = await Game.aggregate([
+      {$match: {userId: user._id}},
+      {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
+      {$group: {_id: {type: "$type", gameMode: "$gameMode"}, count: {$sum: 1}, matchedDuelCount: {
+        $sum: {$cond: {if: {$eq: ["$duelsMatchedList", []]}, then: 0, else: 1}}
+      }}},
+      {$project: {_id: 0, type: "$_id.type", gameMode: "$_id.gameMode", count: 1, matchedDuelCount: 1}}
+    ])
+
+    let groupedCompDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'Duels')[0]
+    let {count: compDuelGameCount, matchedDuelCount: compDuelDetailedGameCount} = groupedCompDuelGame
+    gameStats.push({title: 'Competitive Duels', buttonLink: '/scrap/getgamedetails/compduels', nbGames: compDuelGameCount, nbGamesDetailed: compDuelDetailedGameCount})
+
+    let groupedCompTeamDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'TeamDuels')[0]
+    let {count: compTeamDuelGameCount, matchedDuelCount: compTeamDuelDetailedGameCount} = groupedCompTeamDuelGame
+    gameStats.push({title: 'Competitive Team Duels', buttonLink: '/scrap/getgamedetails/compteamduels', nbGames: compTeamDuelGameCount, nbGamesDetailed: compTeamDuelDetailedGameCount})
+    return {latestGame, gameStats}
   }
-  let gameStats = []
-  gameStats.push({title: 'Total', buttonLink: '/scrap/getgamedetails/all', nbGames: gameGlobalData[0].count, nbGamesDetailed: gameGlobalData[0].countDuelsMatched})
-
-  let groupedGames = await Game.aggregate([
-    {$match: {userId: user._id}},
-    {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
-    {$group: {_id: {type: "$type", gameMode: "$gameMode"}, count: {$sum: 1}, matchedDuelCount: {
-      $sum: {$cond: {if: {$eq: ["$duelsMatchedList", []]}, then: 0, else: 1}}
-    }}},
-    {$project: {_id: 0, type: "$_id.type", gameMode: "$_id.gameMode", count: 1, matchedDuelCount: 1}}
-  ])
-
-  let groupedCompDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'Duels')[0]
-  let {count: compDuelGameCount, matchedDuelCount: compDuelDetailedGameCount} = groupedCompDuelGame
-  gameStats.push({title: 'Competitive Duels', buttonLink: '/scrap/getgamedetails/compduels', nbGames: compDuelGameCount, nbGamesDetailed: compDuelDetailedGameCount})
-
-  let groupedCompTeamDuelGame = groupedGames.filter((g) => g.type == 'PlayedCompetitiveGame' && g.gameMode == 'TeamDuels')[0]
-  let {count: compTeamDuelGameCount, matchedDuelCount: compTeamDuelDetailedGameCount} = groupedCompTeamDuelGame
-  gameStats.push({title: 'Competitive Team Duels', buttonLink: '/scrap/getgamedetails/compteamduels', nbGames: compTeamDuelGameCount, nbGamesDetailed: compTeamDuelDetailedGameCount})
-
-  return {latestGame, gameStats}
 }
 
 const prepareCleanDataButtonSection = async function(user) {
