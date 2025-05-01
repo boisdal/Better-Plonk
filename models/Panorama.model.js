@@ -5,7 +5,7 @@ const PanoramaSchema = new mongoose.Schema({
     type: mongoose.ObjectId,
     required: true,
   },
-  PanoramaGGId: {
+  panoramaGGId: {
     type: String,
     required: true,
   },

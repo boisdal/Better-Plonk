@@ -32,7 +32,7 @@ const bindCategoryScanButtons = function () {
             } else {
                 button.prop('disabled', true)
                 button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Scanning...')
-                waitForTaskCompletion(0, '/scrap/isTaskDone', 30, function() {
+                waitForTaskCompletion(0, '/scrap/isTaskDone', 300, function() {
                     let t1 = $.now()
                     let dt = (t1-t0)/1000
                     toastNotif('Done', `took ${dt}s`, 'Scan is done')
@@ -42,6 +42,8 @@ const bindCategoryScanButtons = function () {
                     })
                 })
             }
+        }).fail(function(err) {
+            console.warn(err)
         })
     })
 }

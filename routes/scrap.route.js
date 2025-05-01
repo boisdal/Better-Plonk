@@ -1,17 +1,14 @@
 const router = require('express').Router()
 const { ensureAuth, ensureGuest } = require('../middleware/auth')
 const request = require('request-promise')
-const Task = require('../models/Task.model')
-const Duel = require('../models/Duel.model')
-const Game = require('../models/Game.model')
-const Guess = require('../models/Guess.model')
-const Round = require('../models/Round.model')
+const {Duel, Game, Guess, Player, Round, Task} = require('../utils/models')
 const {activityCodes} = require('../utils/enums')
 const BASE_URL = 'https://www.geoguessr.com/api'
 const userDependantTableList = [
   {name: 'Duel', model: Duel},
   {name: 'Game', model: Game},
   {name: 'Guess', model: Guess},
+  {name: 'Player', model: Player},
   {name: 'Round', model: Round}
 ]
 
@@ -98,7 +95,7 @@ const storeGame = async function(user, game) {
   }
 }
 
-const prepareScrapButtonSection = async function(user) { // TODO: adapt to allow empty game table
+const prepareScrapButtonSection = async function(user) {
   let gameGlobalData = await Game.aggregate([
     {$lookup: {from: "duels", localField: "_id", foreignField: "gameId", as: "duelsMatchedList"}},
     {$group: {_id: null, count: {$sum: 1}, countDuelsMatched: {

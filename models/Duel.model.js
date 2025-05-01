@@ -41,6 +41,10 @@ const Schema = new mongoose.Schema({
     type: String,
     required: true
   },
+  mapMaxErrorDistance : {
+    type: String,
+    required: true
+  },
   roundsWithoutDamageMultiplier: {
     type: Number,
     required: true
@@ -49,19 +53,23 @@ const Schema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  isCompetitive : {
+  isCompetitive: {
     type: Boolean,
     required: true
   },
-  isTeamDuel : {
+  isTeamDuel: {
     type: Boolean,
     required: true
   },
-  winner : {
+  winner: {
     type: String,
     required: true
   },
-  winnerStyle : {
+  winnerRemainingHealth: {
+    type: Number,
+    required: true
+  },
+  winnerStyle: {
     type: String,
     required: true
   },

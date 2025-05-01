@@ -33,5 +33,7 @@ const waitForTaskCompletion = function(cnt, checkingUrl, timeout, callback) {
       } else {
           setTimeout(waitForTaskCompletion, 1000, cnt + 1, checkingUrl, timeout, callback)
       }
+  }).fail(function(err) {
+    toastNotif(err.statusText, err.status, err.responseText, 1000, false, 'error')
   })
 }
