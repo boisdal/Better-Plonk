@@ -9,6 +9,10 @@ const TaskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  percentageDone: {
+    type: Number,
+    required: true,
+  },
 })
 
 module.exports = mongoose.model('Task', TaskSchema)

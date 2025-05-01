@@ -13,7 +13,7 @@ const getCompDuelGameDetails = async function(user) {
   ])
   console.log(`User ${user.displayName} launched a parsing for ${gameToScanList.length} competitive duels.`)
 
-  // let game = gameToScanList[0]
+  let gameDoneCount = 0
   for (let game of gameToScanList) {
     let body = await request({uri: `${GAMESERVER_URL}/duels/${game.gameGGId}`, method: 'GET', "headers": {"Cookie": `_ncfa=${user.token}`}})
     let details = JSON.parse(body)
@@ -89,6 +89,8 @@ const getCompDuelGameDetails = async function(user) {
         await saveGuess(user, roundId, guess)
       }
     }
+    gameDoneCount ++
+    await Task.findOneAndUpdate({userId: user._id}, {$set: {percentageDone: (gameDoneCount/gameToScanList.length)}}, useFindAndModify=false)
   }
   await Task.deleteMany({userId: user._id})
 }
@@ -189,7 +191,7 @@ router.get('/all', ensureAuth, async(req,res) => {
 })
 
 router.get('/compduels', ensureAuth, async(req,res) => {
-  await Task.create({userId: req.user._id, name: 'competitive duel details scan'})
+  await Task.create({userId: req.user._id, name: 'competitive duel details scan', percentageDone: 0})
   getCompDuelGameDetails(req.user)
   res.json({isOk:true})
 })

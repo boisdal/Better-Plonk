@@ -157,8 +157,13 @@ router.post('/scanactivities', ensureAuth, async(req, res) => {
 })
 
 router.get('/isTaskDone', ensureAuth, async(req,res) => {
-  let currentTaskList = await Task.find({userId: req.user._id})
-  res.json({isDone: (currentTaskList.length == 0)})
+  let currentTask = await Task.findOne({userId: req.user._id})
+  if (!currentTask) {
+    res.json({isDone: true})
+  } else {
+    res.json({isDone: false, percentageDone: currentTask.percentageDone})
+  }
+  
 })
 
 router.get('/getscrapbuttonsection', ensureAuth, async(req,res) => {
