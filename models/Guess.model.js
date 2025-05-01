@@ -13,10 +13,6 @@ const GuessSchema = new mongoose.Schema({
     type: mongoose.ObjectId,
     required: true,
   },
-  panoramaId: {
-    type: mongoose.ObjectId,
-    required: true,
-  },
   latitude: {
     type: Number,
     required: true
@@ -25,20 +21,20 @@ const GuessSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  distance : {
+  distance: {
     type: Number,
     required: true
   },
-  score : {
+  score: {
     type: Number,
     required: true
   },
-  isTeamsBest : {
-    type: Date,
+  isTeamsBest: {
+    type: Boolean,
     required: true
   },
-  isFirst : {
-    type: Date,
+  isFirst: {
+    type: Boolean,
     required: true
   }
 }, { collection: 'guesses'})

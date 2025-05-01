@@ -26,17 +26,17 @@ const scanActivities = async function(user) {
     for (let activity of response.entries) {
       if (activityCodes[activity.type] == 'Group') {
         for (let game of activity.payload) {
-          await storeGame(user, game)
+          await saveGame(user, game)
         }
       } else {
-        await storeGame(user, activity)
+        await saveGame(user, activity)
       }
     }
   }
   await Task.deleteMany({userId: user._id})
 }
 
-const storeGame = async function(user, game) {
+const saveGame = async function(user, game) {
   let newGame = {
     userId: user._id, 
     type: activityCodes[game.type], 

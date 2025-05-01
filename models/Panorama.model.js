@@ -1,10 +1,6 @@
 const mongoose = require('mongoose')
 
 const PanoramaSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.ObjectId,
-    required: true,
-  },
   panoramaGGId: {
     type: String,
     required: true,
