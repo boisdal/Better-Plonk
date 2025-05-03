@@ -1,12 +1,16 @@
 const router = require('express').Router()
 const { ensureAuth, ensureGuest } = require('../middleware/auth')
 
-router.get("/data", ensureAuth, async(req,res)=>{
-  res.render('pages/home.view.ejs', {user:req.user})
+router.get("/blunders", ensureAuth, async(req,res)=>{
+  res.render('pages/wip.view.ejs', {user:req.user, title: 'Blunders'})
 })
 
-router.get("/settings", ensureAuth, async(req,res)=>{
-  res.render('pages/home.view.ejs', {user:req.user})
+router.get("/countries", ensureAuth, async(req,res)=>{
+  res.render('pages/wip.view.ejs', {user:req.user, title: 'Countries'})
+})
+
+router.get("/patterns", ensureAuth, async(req,res)=>{
+  res.render('pages/wip.view.ejs', {user:req.user, title: 'Patterns'})
 })
 
 module.exports=router;
